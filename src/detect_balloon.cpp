@@ -200,7 +200,7 @@ void send_ext_cmd()
                 {
                     desire_cmd_value[0] = 0;
                     desire_cmd_value[1] = 0;
-                    desire_cmd_value[2] = -0.01;
+                    desire_cmd_value[2] = 0.05;
 
                     cmd.desire_cmd[0] = desire_cmd_value[0];
                     cmd.desire_cmd[1] = desire_cmd_value[1];
