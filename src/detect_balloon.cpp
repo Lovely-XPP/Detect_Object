@@ -49,8 +49,8 @@ int main(int argc, char **argv)
     {
         if (!nh.getParam("camera_topic", camera_topic))
         {
-            ROS_WARN("Camera Topic Not Found! Simulation Mode OFF!");
-            //simulation = false;
+            ROS_ERROR("Camera Topic Not Found! Programme Exit...");
+            return 0;
         }
         else
         {
