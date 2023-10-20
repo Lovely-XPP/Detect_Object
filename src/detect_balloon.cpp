@@ -37,7 +37,6 @@ ros::Subscriber image_sub;
 
 void redDetectHSV();
 void send_ext_cmd();
-void ext_on_cb(const std_msgs::Bool::ConstPtr &msg);
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg);
 
 int main(int argc, char **argv)
