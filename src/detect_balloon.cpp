@@ -98,13 +98,6 @@ void send_ext_cmd()
             ROS_INFO("External Command: Waiting for user-define mode!");
             ros::Duration(0.5).sleep();
         }
-        // q0 = current_state.pose.orientation.x;
-        // q1 = current_state.pose.orientation.y;
-        // q2 = current_state.pose.orientation.z;
-        // q3 = current_state.pose.orientation.w;
-        // pitch = asin(-2 * q1 * q3 + 2 * q0 * q2) * 57.3;
-        // roll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2 * q2 + 1) * 57.3;
-        // yaw = -atan2(2 * q1 * q2 + 2 * q0 * q3, -2 * q2 * q2 - 2 * q3 * q3 + 1) * 57.3;
         if (init)
         {
             yaw_value = ext_cmd.attitude[2];
@@ -127,10 +120,6 @@ void send_ext_cmd()
             desire_cmd_value[1] = 0.003 * detect_error.ex; // ex = 320-cx
             //"Z Velocity [m/s] 向上
             desire_cmd_value[2] = 0.003 * (detect_error.ey); // ey = 240-cy
-            //if (abs(current_state.pose.position.z) - minz > 3.5)
-            //{
-            //   desire_cmd_value[2] = -0.2;
-            //}
                 
             fail_count = 0; 
             last_pos = detect_error.ex / abs(detect_error.ex);
