@@ -10,11 +10,11 @@
 #include <cmath>
 #include <thread>
 #include <std_msgs/Bool.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/Image.h>
 #include <px4_cmd/Command.h>
 #include <cv_bridge/cv_bridge.h>
 #include <tf/transform_datatypes.h>
+#include <px4_cmd/template/single_vehicle_external_command.hpp>
 
 using namespace std;
 using namespace cv;
@@ -29,23 +29,16 @@ typedef struct detect_ballon_error
     int flag = 0;
 } Detect_Error;
 Detect_Error detect_error;
-bool ext_on = false;
-px4_cmd::Command cmd;
-geometry_msgs::PoseStamped current_state;
 bool simulation = true;
 string camera_topic = "/iris/usb_cam/image_raw";
 cv::Mat image_from_topic;
 
-ros::Subscriber ext_on_sub;
-ros::Subscriber state_sub;
 ros::Subscriber image_sub;
-ros::Publisher cmd_pub;
 
 void redDetectHSV();
 void send_ext_cmd();
 void ext_on_cb(const std_msgs::Bool::ConstPtr &msg);
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg);
-void state_cb(const geometry_msgs::PoseStamped::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -65,10 +58,7 @@ int main(int argc, char **argv)
             ROS_INFO_STREAM("Input Camera Topic: " << camera_topic);
         }
     }
-    ext_on_sub = nh.subscribe<std_msgs::Bool>("/px4_cmd/ext_on", 20, ext_on_cb);
-    state_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 20, state_cb);
     image_sub = nh.subscribe<sensor_msgs::Image>(camera_topic, 20, image_raw_sub);
-    cmd_pub = nh.advertise<px4_cmd::Command>("/px4_cmd/ext_command", 20);
 
     while (simulation && image_sub.getNumPublishers() < 1)
     {
@@ -88,9 +78,9 @@ int main(int argc, char **argv)
 
 void send_ext_cmd()
 {
-    cmd.ext_total_time = -1;
-    cmd.ext_time = 0;
-    float t = 0.0;
+    single_vehicle_external_command ext_cmd;
+    ext_cmd.total_time = -1;
+    ext_cmd.start();
     double minz = 1;
     float q0 = 0, q1 = 0, q2 = 0, q3 = 0;
     int reverse_flag;
@@ -101,12 +91,9 @@ void send_ext_cmd()
     double yaw_value = 0;
     tf::Quaternion quad;
     double pitch, roll, yaw;
-    cmd.Mode = px4_cmd::Command::Move;
-    cmd.Move_frame = px4_cmd::Command::BODY;
-    cmd.Move_mode = px4_cmd::Command::XYZ_VEL;
     while (ros::ok())
     {
-        while (!ext_on)
+        while (!ext_cmd.ext_on)
         {
             init = true;
             ROS_INFO("External Command: Waiting for user-define mode!");
@@ -119,11 +106,9 @@ void send_ext_cmd()
         // pitch = asin(-2 * q1 * q3 + 2 * q0 * q2) * 57.3;
         // roll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2 * q2 + 1) * 57.3;
         // yaw = -atan2(2 * q1 * q2 + 2 * q0 * q3, -2 * q2 * q2 - 2 * q3 * q3 + 1) * 57.3;
-        tf::quaternionMsgToTF(current_state.pose.orientation, quad);
-        tf::Matrix3x3(quad).getRPY(roll, pitch, yaw);
         if (init)
         {
-            yaw_value = yaw;
+            yaw_value = ext_cmd.attitude[2];
             init = false;
         }
         if (detect_error.flag == 1 && abs(detect_error.ex) < 120)
@@ -185,11 +170,6 @@ void send_ext_cmd()
             }
 
             ROS_INFO("Find Balloon!");
-
-            cmd.desire_cmd[0] = desire_cmd_value[0];
-            cmd.desire_cmd[1] = desire_cmd_value[1];
-            cmd.desire_cmd[2] = desire_cmd_value[2];
-            cmd.yaw_cmd = yaw_value;
         }
         else
         {
@@ -201,10 +181,6 @@ void send_ext_cmd()
                     desire_cmd_value[0] = 0;
                     desire_cmd_value[1] = 0;
                     desire_cmd_value[2] = 0.05;
-
-                    cmd.desire_cmd[0] = desire_cmd_value[0];
-                    cmd.desire_cmd[1] = desire_cmd_value[1];
-                    cmd.desire_cmd[2] = desire_cmd_value[2];
 
                     ROS_WARN("Not Detect Balloon!");
                     // yaw_value += PI/20;
@@ -227,7 +203,6 @@ void send_ext_cmd()
                             yaw_value -= PI / 60;
                         }
                     }
-                    cmd.yaw_cmd = yaw_value;
                 }
             }
             else if (detect_error.flag == 1 && abs(detect_error.ex) > 120)
@@ -235,10 +210,6 @@ void send_ext_cmd()
                 desire_cmd_value[0] = 0;
                 desire_cmd_value[1] = 0;
                 desire_cmd_value[2] = 0;
-
-                cmd.desire_cmd[0] = desire_cmd_value[0];
-                cmd.desire_cmd[1] = desire_cmd_value[1];
-                cmd.desire_cmd[2] = desire_cmd_value[2];
 
                 ROS_WARN("Balloon Lost!");
                 if (detect_error.ex > 0) // 框在左边，飞机在右边
@@ -249,12 +220,9 @@ void send_ext_cmd()
                 {
                     yaw_value -= PI / 60;
                 }
-                cmd.yaw_cmd = yaw_value;
             }
         } // end else
-        t = t + 0.1;
-        cmd.ext_time = t;
-        cmd_pub.publish(cmd);
+        ext_cmd.set_velocity(desire_cmd_value[0], desire_cmd_value[1], desire_cmd_value[2], yaw_value, px4_cmd::Command::BODY);
         ros::Duration(0.1).sleep();
         ros::spinOnce();
     }
@@ -584,14 +552,4 @@ void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg)
     sensor_msgs::Image current_state = *msg;
     cv_ptr = cv_bridge::toCvCopy(msg, msg->encoding);
     cv::cvtColor(cv_ptr->image, image_from_topic, COLOR_RGB2BGR);
-}
-
-void state_cb(const geometry_msgs::PoseStamped::ConstPtr &msg)
-{
-    current_state = *msg;
-}
-
-void ext_on_cb(const std_msgs::Bool::ConstPtr &msg)
-{
-    ext_on = msg->data;
 }
