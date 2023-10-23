@@ -2,7 +2,7 @@
 <launch>
     <arg name="camera_topic" default="/iris/usb_cam/image_raw"/>
     <arg name="simulation" default="true"/>
-    <arg name="red_ball_dir" default="$(find detect_balloon)/models/redball/model.sdf"/>
+    <arg name="red_ball_dir" default="$(find detect_balloon)/models/RedBall/model.sdf"/>
     <arg name="x" value="5.0"/>
     <arg name="y" value="5.0"/>
     <arg name="z" value="5.0"/>

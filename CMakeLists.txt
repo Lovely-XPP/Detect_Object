@@ -32,5 +32,8 @@ include_directories(
 
 add_executable(detect_balloon src/detect_balloon.cpp)
 add_dependencies(detect_balloon ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(opencv_test_node opencv_test_node_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(detect_balloon ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_executable(detect_doorframe src/detect_doorframe.cpp)
+add_dependencies(detect_doorframe ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(detect_doorframe ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

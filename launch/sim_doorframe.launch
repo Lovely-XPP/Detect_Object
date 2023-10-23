@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="camera_topic" default="/iris/usb_cam/image_raw"/>
+    <arg name="simulation" default="true"/>
+    <arg name="red_ball_dir" default="$(find detect_balloon)/models/CircularFrame/model.sdf"/>
+    <arg name="x" value="0.0"/>
+    <arg name="y" value="5.0"/>
+    <arg name="z" value="5.0"/>
+    <arg name="R" value="0.0"/>
+    <arg name="P" value="0.0"/>
+    <arg name="Y" value="1.57"/>
+    <node name="spawn_doorframe" pkg="gazebo_ros" type="spawn_model" output="screen" args="-sdf -file $(arg red_ball_dir) -model doorframe -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+    <node name="detect_doorframe" pkg="detect_balloon" type="detect_doorframe" output="screen">
+        <param name="camera_topic" value="$(arg camera_topic)"/>
+    	<param name="simulation" value="$(arg simulation)"/>
+    </node>
+</launch>           
