@@ -71,8 +71,9 @@ int main(int argc, char **argv)
 
     redDetectHSV();
     shutdown_flag = true;
-    ros::Duration(5).sleep();
+    sleep(1);
 
+    nh.shutdown();
     return 0;
 }
 
@@ -516,6 +517,7 @@ void redDetectHSV()
             break;
         }
     }
+    destroyAllWindows();
 } // end main func
 
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg)

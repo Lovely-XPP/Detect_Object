@@ -51,7 +51,7 @@ int main(int argc, char **argv)
         if (!nh.getParam("camera_topic", camera_topic))
         {
             ROS_ERROR("Camera Topic Not Found! Programme Exit...");
-            return 0;
+            //return 0;
         }
         else
         {
@@ -72,8 +72,9 @@ int main(int argc, char **argv)
 
     redDetectHSV();
     shutdown_flag = true;
-    ros::Duration(5).sleep();
+    sleep(1);
 
+    nh.shutdown();
     return 0;
 }
 
@@ -92,9 +93,9 @@ void send_ext_cmd()
     double yaw_value = 0;
     tf::Quaternion quad;
     double pitch, roll, yaw;
-    while (ros::ok())
+    while (ros::ok() && !shutdown_flag)
     {
-        while (!ext_cmd.ext_on && !shutdown_flag)
+        while (!ext_cmd.ext_on)
         {
             init = true;
             ROS_INFO("External Command: Waiting for user-define mode!");
@@ -220,6 +221,7 @@ void send_ext_cmd()
         ros::Duration(0.1).sleep();
         ros::spinOnce();
     }
+    ext_cmd.shutdown();
 }
 
 vector<Point> GetPoint(vector<Point> contour)
@@ -538,6 +540,7 @@ void redDetectHSV()
             break;
         }
     }
+    destroyAllWindows();
 } // end main func
 
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg)
