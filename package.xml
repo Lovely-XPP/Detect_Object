@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>detect_balloon</name>
+  <name>detect_object</name>
   <version>1.0.3</version>
-  <description>The detect_balloon package</description>
+  <description>The detect_object package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

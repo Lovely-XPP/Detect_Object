@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
-project(detect_balloon VERSION 1.0.3 LANGUAGES CXX)
+project(detect_object VERSION 1.0.3 LANGUAGES CXX)
 
 # set C++ standard
 set(CMAKE_CXX_FLAGS "-std=c++11")

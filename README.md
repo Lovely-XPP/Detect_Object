@@ -15,7 +15,7 @@ ROS 包：`px4_cmd`
 ```bash
 mkdir ~/catkin_ws && cd ~/catkin_ws && \
 mkdir src && cd src && \
-git clone https://github.com/Lovely-XPP/Detect_Balloon.git && \
+git clone https://github.com/Lovely-XPP/Detect_Object.git && \
 cd .. && catkin_make
 ```
 
@@ -23,11 +23,11 @@ cd .. && catkin_make
 ### 撞击气球
 ```bash
 source ~/catkin_ws/setup.bash
-bash $(rospack find dectect_balloon)/sh/sim_balloon.sh
+bash $(rospack find dectect_object)/sh/sim_balloon.sh
 ```
 
 ### 穿越门框
 ```bash
 source ~/catkin_ws/setup.bash
-bash $(rospack find dectect_balloon)/sh/sim_doorframe.sh
+bash $(rospack find dectect_object)/sh/sim_doorframe.sh
 ```
