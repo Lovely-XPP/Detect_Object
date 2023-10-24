@@ -9,7 +9,7 @@ The simulation programme based on Gazebo and PX4 to fly across or crash object.
 <img width="1920" alt="result" src="https://github.com/Lovely-XPP/Detect_Object/assets/66028151/eea777ad-4298-4943-95e2-80a2e15fcfae">
 
 ## 依赖
-ROS 包：`px4_cmd`
+ROS 包：[`px4_cmd`](https://github.com/Lovely-XPP/PX4_cmd)
 
 ## 编译
 ```bash
