@@ -2,12 +2,12 @@
 <launch>
     <arg name="camera_topic" default="/iris/usb_cam/image_raw"/>
     <arg name="simulation" default="true"/>
-    <arg name="red_ball_dir" default="$(find detect_balloon)/models/RedBall/model.sdf"/>
+    <arg name="red_ball_dir" default="$(find detect_object)/models/RedBall/model.sdf"/>
     <arg name="x" value="5.0"/>
     <arg name="y" value="5.0"/>
     <arg name="z" value="5.0"/>
     <node name="spawn_redball" pkg="gazebo_ros" type="spawn_model" output="screen" args="-sdf -file $(arg red_ball_dir) -model red_ball -x $(arg x) -y $(arg y) -z $(arg z)"/>
-    <node name="detect_balloon" pkg="detect_balloon" type="detect_balloon" output="screen">
+    <node name="detect_balloon" pkg="detect_object" type="detect_balloon" output="screen">
         <param name="camera_topic" value="$(arg camera_topic)"/>
     	<param name="simulation" value="$(arg simulation)"/>
     </node>
