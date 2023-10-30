@@ -2,6 +2,7 @@
 <launch>
     <arg name="camera_topic" default="/iris/usb_cam/image_raw"/>
     <arg name="simulation" default="true"/>
+    <arg name="save_video" default="false"/>
     <arg name="red_ball_dir" default="$(find detect_object)/models/RedBall/model.sdf"/>
     <arg name="x" value="5.0"/>
     <arg name="y" value="5.0"/>
@@ -10,5 +11,6 @@
     <node name="detect_balloon" pkg="detect_object" type="detect_balloon" output="screen">
         <param name="camera_topic" value="$(arg camera_topic)"/>
     	<param name="simulation" value="$(arg simulation)"/>
+        <param name="save_video" value="$(arg save_video)"/>
     </node>
 </launch>

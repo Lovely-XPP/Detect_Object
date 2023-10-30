@@ -20,6 +20,7 @@ using namespace cv;
 
 #define PI 3.14159265358979323846
 
+// initial vars
 typedef struct detect_information
 {
     double ex = 0;
@@ -28,14 +29,29 @@ typedef struct detect_information
     int flag = 0;
 } Detect_Info;
 Detect_Info detect_info;
-bool simulation = true;
+bool simulation = false;
 string camera_topic = "/iris/usb_cam/image_raw";
 cv::Mat image_from_topic;
 bool shutdown_flag = false;
-
 ros::Subscriber image_sub;
 
-void redDetectHSV();
+// Vedio setting
+static const std::string OPENCV_WINDOW = "Camera Image";
+cv::VideoWriter video_w;
+int encode_type = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+double fps = 30.0;
+bool video_write_first = true;
+bool save_video = false;
+// Save path with time
+char s[30];
+time_t now = time(NULL);
+auto tim = *(localtime(&now));
+auto tmp = std::strftime(s, 30, "Fly_%Y_%b_%d_%H_%M_%S.avi", localtime(&now));
+char *cwd = getenv("HOME");
+string save_path = string(cwd) + string("/") + string(s);
+
+// function declare
+void detect_doorframe();
 void send_ext_cmd();
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg);
 
@@ -45,6 +61,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     nh.getParam("simulation", simulation);
+    nh.getParam("save_video", save_video);
     if (simulation)
     {
         if (!nh.getParam("camera_topic", camera_topic))
@@ -69,7 +86,7 @@ int main(int argc, char **argv)
     std::thread ros_thread(send_ext_cmd);
     ros_thread.detach();
 
-    redDetectHSV();
+    detect_doorframe();
     shutdown_flag = true;
     sleep(1);
 
@@ -367,7 +384,7 @@ cv::Mat WhiteBalance_Gray(cv::Mat src)
     return result;
 }
 
-void redDetectHSV()
+void detect_doorframe()
 {
     Mat imgOriginal, imgBalance, imgHSV, imgRGB, imgGray, output;
     Mat element1, element2;
@@ -399,6 +416,20 @@ void redDetectHSV()
         if (imgBalance.rows <= 1)
         {
             imgBalance = WhiteBalance_Gray(imgOriginal);
+        }
+        if (save_video && video_write_first)
+        {
+            video_w.open(save_path, encode_type, fps, cv::Size(imgOriginal.size[1], imgOriginal.size[0]), true);
+            video_write_first = false;
+        }
+        if (!ros::ok())
+        {
+            if (save_video)
+            {
+                video_w.release();
+            }
+            cv::destroyWindow(OPENCV_WINDOW);
+            break;
         }
         imgRGB = imgBalance.clone();
 
@@ -512,8 +543,16 @@ void redDetectHSV()
             detect_info.flag = 0;
         }
         cv::imshow("raw_img", imgOriginal);
+        if (save_video)
+        {
+            video_w.write(imgOriginal);
+        }
         if (cv::waitKey(1) == 27)
         {
+            if (save_video)
+            {
+                video_w.release();
+            }
             break;
         }
     }

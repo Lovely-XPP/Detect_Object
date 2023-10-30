@@ -29,14 +29,29 @@ typedef struct detect_ballon_error
     int flag = 0;
 } Detect_Error;
 Detect_Error detect_error;
-bool simulation = true;
+bool simulation = false;
 bool shutdown_flag = false;
 string camera_topic = "/iris/usb_cam/image_raw";
 cv::Mat image_from_topic;
-
 ros::Subscriber image_sub;
 
-void redDetectHSV();
+// Vedio setting
+static const std::string OPENCV_WINDOW = "Camera Image";
+cv::VideoWriter video_w;
+int encode_type = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+double fps = 30.0;
+bool video_write_first = true;
+bool save_video = true;
+// Save path with time
+char s[30];
+time_t now = time(NULL);
+auto tim = *(localtime(&now));
+auto tmp = std::strftime(s, 30, "Fly_%Y_%b_%d_%H_%M_%S.avi", localtime(&now));
+char *cwd = getenv("HOME");
+string save_path = string(cwd) + string("/") + string(s);
+
+// function declare
+void detect_balloon();
 void send_ext_cmd();
 void image_raw_sub(const sensor_msgs::Image::ConstPtr &msg);
 
@@ -46,6 +61,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     nh.getParam("simulation", simulation);
+    nh.getParam("save_video", save_video);
     if (simulation)
     {
         if (!nh.getParam("camera_topic", camera_topic))
@@ -70,7 +86,7 @@ int main(int argc, char **argv)
     std::thread ros_thread(send_ext_cmd);
     ros_thread.detach();
 
-    redDetectHSV();
+    detect_balloon();
     shutdown_flag = true;
     sleep(1);
 
@@ -391,7 +407,7 @@ cv::Mat WhiteBalance_Gray(cv::Mat src)
     return result;
 }
 
-void redDetectHSV()
+void detect_balloon()
 {
     cv::Mat imgOriginal;
     Mat imgBalance;
@@ -416,11 +432,26 @@ void redDetectHSV()
             ros::spinOnce();
             imgOriginal = image_from_topic.clone();
         }
+        if (save_video && video_write_first)
+        {
+            video_w.open(save_path, encode_type, fps, cv::Size(imgOriginal.size[1], imgOriginal.size[0]), true);
+            video_write_first = false;
+        }
+        if (!ros::ok())
+        {
+            if (save_video)
+            {
+                video_w.release();
+            }
+            cv::destroyWindow(OPENCV_WINDOW);
+            break;
+        }
         imgBalance = WhiteBalance_PRA(imgOriginal);
         if (imgBalance.rows <= 1)
         {
             imgBalance = WhiteBalance_Gray(imgOriginal);
         }
+
         imgRGB = imgBalance.clone();
         cvtColor(imgRGB, imgHSV, COLOR_BGR2HSV); // Convert the captured frame from BGR to HSV
         // 因为我们读取的是彩色图，直方图均衡化需要在HSV空间做
@@ -535,8 +566,16 @@ void redDetectHSV()
             detect_error.flag = 0;
         }
         imshow("raw_img", imgOriginal);
+        if (save_video)
+        {
+            video_w.write(imgOriginal);
+        }
         if (cv::waitKey(1) == 27)
         {
+            if (save_video)
+            {
+                video_w.release();
+            }
             break;
         }
     }
