@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 project(detect_object VERSION 1.0.3 LANGUAGES CXX)
 
 # set C++ standard
