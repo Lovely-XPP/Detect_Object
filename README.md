@@ -23,11 +23,11 @@ cd .. && catkin_make
 ### 撞击气球
 ```bash
 source ~/catkin_ws/setup.bash
-bash $(rospack find dectect_object)/sh/sim_balloon.sh
+bash $(rospack find detect_object)/sh/sim_balloon.sh
 ```
 
 ### 穿越门框
 ```bash
 source ~/catkin_ws/setup.bash
-bash $(rospack find dectect_object)/sh/sim_doorframe.sh
+bash $(rospack find detect_object)/sh/sim_doorframe.sh
 ```
