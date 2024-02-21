@@ -111,7 +111,7 @@ void send_ext_cmd()
     double pitch, roll, yaw;
     while (ros::ok() && !shutdown_flag)
     {
-        while (!ext_cmd.ext_on)
+        while (!ext_cmd.ext_cmd_state)
         {
             init = true;
             ROS_INFO("External Command: Waiting for user-define mode!");
