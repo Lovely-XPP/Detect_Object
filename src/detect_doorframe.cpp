@@ -13,7 +13,7 @@
 #include <px4_cmd/Command.h>
 #include <cv_bridge/cv_bridge.h>
 #include <tf/transform_datatypes.h>
-#include <px4_cmd/single_vehicle_external_command.hpp>
+#include <px4_cmd/vehicle_external_command.hpp>
 
 using namespace std;
 using namespace cv;
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
 void send_ext_cmd()
 {
-    single_vehicle_external_command ext_cmd;
+    vehicle_external_command ext_cmd;
     ext_cmd.total_time = -1;
     ext_cmd.start();
     double minz = 1;
