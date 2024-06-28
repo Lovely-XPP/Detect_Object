@@ -13,7 +13,7 @@
 #include <px4_cmd/Command.h>
 #include <cv_bridge/cv_bridge.h>
 #include <tf/transform_datatypes.h>
-#include <px4_cmd/vehicle_external_command.hpp>
+#include <px4_cmd/vehicle_external_command.h>
 
 using namespace std;
 using namespace cv;
